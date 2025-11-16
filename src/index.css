@@ -1,0 +1,172 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.app {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #b98863 0%, #7a4a2f 45%, #3a2014 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+/* tight edge glow — reduced spread, smooth color cycle */
+.glow-border {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9999;
+  border-radius: 10px;
+  box-shadow: inset 0 0 18px 3px rgba(255, 60, 0, 0.32);
+  animation: borderGlow 10s infinite linear;
+}
+@keyframes borderGlow {
+  0%   { box-shadow: inset 0 0 18px 3px rgba(255, 40, 0, 0.32); }
+  33%  { box-shadow: inset 0 0 18px 3px rgba(255,120, 0, 0.32); }
+  66%  { box-shadow: inset 0 0 18px 3px rgba(255,190, 0, 0.32); }
+  100% { box-shadow: inset 0 0 18px 3px rgba(255, 40, 0, 0.32); }
+}
+
+/* falling leaves */
+@keyframes fall {
+  0% { transform: translateY(-10%) rotate(0deg); opacity: 0.8; }
+  100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
+}
+.leaves-container { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.leaf { position: absolute; font-size: 1.3rem; color: rgba(200,70,30,.3); animation: fall linear infinite; }
+.leaf-1 { left: 5%;  animation-duration: 12s; animation-delay: 0s; }
+.leaf-2 { left: 20%; animation-duration: 14s; animation-delay: 2s; }
+.leaf-3 { left: 35%; animation-duration: 13s; animation-delay: 4s; }
+.leaf-4 { left: 50%; animation-duration: 16s; animation-delay: 1s; }
+.leaf-5 { left: 65%; animation-duration: 15s; animation-delay: 3s; }
+.leaf-6 { left: 80%; animation-duration: 12s; animation-delay: 5s; }
+.leaf-7 { left: 90%; animation-duration: 18s; animation-delay: 2s; }
+.leaf-8 { left: 75%; animation-duration: 20s; animation-delay: 0s; }
+
+/* slim banner that hugs logo’s content (not image bounds) */
+.banner {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: transparent; /* inner strip does the black */
+  margin-top: 6px;
+}
+.banner-inner {
+  background: #000;
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 14px;        /* tiny vertical padding so strip ≈ logo height */
+  line-height: 0;           /* removes extra space */
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.5);
+}
+.logo {
+  height: 92px;             /* tweak this to match your preferred look */
+  width: auto;
+  display: block;
+  margin: 0;
+}
+
+/* title */
+.order-title {
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: #f1c58b;
+  margin-top: 16px;
+  text-align: center;
+}
+
+/* island + form */
+.form-section {
+  margin-top: 22px;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.island-box {
+  position: relative;
+  width: 96%;
+  max-width: 720px; /* bigger so text sits comfortably inside the outline */
+}
+.island-outline {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 0 28px rgba(255, 120, 35, 0.50));
+  animation: outlineGlow 6s ease-in-out infinite;
+}
+@keyframes outlineGlow {
+  0%   { filter: drop-shadow(0 0 20px rgba(255, 80, 10, 0.40)); }
+  50%  { filter: drop-shadow(0 0 34px rgba(255,130,40, 0.62)); }
+  100% { filter: drop-shadow(0 0 20px rgba(255, 80, 10, 0.40)); }
+}
+
+/* inner form content */
+.form-contents {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  padding: 2rem 1.25rem;
+}
+.question { color: #fff1dc; margin-bottom: 1rem; }
+
+/* controls */
+.btn {
+  width: 88%;
+  max-width: 320px;
+  margin: 0.42rem 0;
+  padding: 0.72rem;
+  border: none;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 1rem;
+  transition: transform .2s ease, opacity .2s ease;
+  cursor: pointer;
+}
+.btn:hover { transform: scale(1.04); opacity: .95; }
+.btn.red { background-color: #b9472a; }
+.btn.orange { background-color: #a1541d; }
+.btn.confirm { background-color: #e2a868; color: #1b110d; }
+
+.dropdown,
+.input {
+  width: 82%;
+  padding: 0.68rem;
+  background: rgba(0,0,0,.15);
+  border: 1px solid #e2a868;
+  border-radius: 10px;
+  color: #fff1dc;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+}
+.input::placeholder { color: #f0d3b0; }
+
+.error { color: #ff6b6b; font-size: 0.9rem; margin-top: .5rem; }
+
+.thankyou { font-size: 1.4rem; color: #f1c58b; margin-bottom: .5rem; }
+.summary  { font-size: .95rem; color: #fff1dc; }
+
+/* footer */
+.footer {
+  margin-top: 28px;
+  padding: 1.2rem;
+  text-align: center;
+  font-weight: 800;
+  color: #f1c58b;
+  background-color: rgba(0, 0, 0, 0.85);
+  width: 100%;
+}
+
+/* responsive */
+@media (max-width: 768px) {
+  .logo { height: 80px; }
+  .order-title { font-size: 1.9rem; }
+  .island-box { max-width: 600px; }
+  .btn { max-width: 300px; }
+  .dropdown, .input { width: 90%; }
+}
