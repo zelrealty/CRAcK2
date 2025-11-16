@@ -27,26 +27,22 @@ body,
   inset: 0;
   pointer-events: none;
   z-index: 1;
-  box-shadow:
-    0 0 16px 6px rgba(230, 57, 0, 0.5),
+  box-shadow: 0 0 16px 6px rgba(230, 57, 0, 0.5),
     0 0 36px 12px rgba(255, 159, 0, 0.45);
   animation: borderGlow 8s infinite alternate ease-in-out;
 }
 
 @keyframes borderGlow {
   0% {
-    box-shadow:
-      0 0 16px 6px rgba(230, 57, 0, 0.55),
+    box-shadow: 0 0 16px 6px rgba(230, 57, 0, 0.55),
       0 0 32px 10px rgba(255, 99, 0, 0.45);
   }
   50% {
-    box-shadow:
-      0 0 20px 8px rgba(255, 159, 0, 0.55),
+    box-shadow: 0 0 20px 8px rgba(255, 159, 0, 0.55),
       0 0 40px 14px rgba(253, 216, 83, 0.5);
   }
   100% {
-    box-shadow:
-      0 0 16px 6px rgba(230, 57, 0, 0.55),
+    box-shadow: 0 0 16px 6px rgba(230, 57, 0, 0.55),
       0 0 32px 10px rgba(255, 99, 0, 0.45);
   }
 }
@@ -230,16 +226,18 @@ body,
 
 /* Footer */
 .footer {
-  margin-top: 40px;
-  background: rgba(0, 0, 0, 0.9);
-  color: #ffb84d;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000000;
+  padding: 25px 10px;
   text-align: center;
-  padding: 18px 12px;
-  border-top: 2px solid #ffb84d;
-  box-shadow: 0 -4px 16px rgba(230, 57, 0, 0.5);
-  font-family: "Bebas Neue", sans-serif;
-  position: relative;
-  z-index: 2;
+  color: #ffffff;
+  letter-spacing: 2px;
+  font-size: 1.1rem;
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+  z-index: 50000;
 }
 
 .extra-love {
@@ -278,21 +276,39 @@ body,
 /* FORCE THE TOP BANNER TO EXIST */
 .banner {
   width: 100%;
-  height: 140px;                /* can adjust to your liking */
-  background: #000000 !important;          /* solid black */
+  height: 140px; /* can adjust to your liking */
+  background: #000000 !important; /* solid black */
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
-  z-index: 50;                  /* stays ABOVE everything */
-  box-shadow: 0 0 22px rgba(0,0,0,0.8);
+  z-index: 50; /* stays ABOVE everything */
+  box-shadow: 0 0 22px rgba(0, 0, 0, 0.8);
 }
 
 /* LOGO INSIDE THE BANNER */
 .banner img {
-  height: 100%;                 /* fills banner height */
-  width: auto;                  /* keep proportions */
+  height: 100%; /* fills banner height */
+  width: auto; /* keep proportions */
   object-fit: contain;
   margin: 0;
   padding: 0;
+}
+body,
+html {
+  height: 100%;
+}
+
+#root {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.content {
+  flex: 1; /* pushes footer down */
+}
+.footer-banner {
+  position: relative; /* or static */
+  margin-top: 40px;
 }
