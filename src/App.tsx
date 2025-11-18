@@ -1,84 +1,113 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import "./App.css";
 
 const SHEETS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbxFUg0-Ck7_M4HIMAT5d7tyXpA4qoBMDM_6ouSeA6hloPZp4fJlXay-LSRSmjmO4coH/exec";
+  "https://script.google.com/macros/s/AKfycbyiGBibqoe3WlQdphInfg1pEDIoBuJk_AIpjWD1bT6FJeuIXrTdzvEq6ESFqCAjaBQQ/exec";
+
+type Choice = "With Alcohol ($23)" | "No Alcohol ($15)";
+
+interface FallingThing {
+  id: number;
+  left: string;
+  delay: string;
+  duration: string;
+}
 
 const App: React.FC = () => {
-  // === ORDER STATE MACHINE ===
-  const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
-  const [choice, setChoice] = useState<"" | "With Alcohol ($23)" | "No Alcohol ($15)">("");
+  const [step, setStep] = useState<number>(0); // 0 = island, 1 = qty, 2 = phone, 3 = name, 4 = done
+  const [choice, setChoice] = useState<Choice | "">("");
   const [quantity, setQuantity] = useState<string>("1");
-  const [name, setName] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
+  const [name, setName] = useState<string>("");
+  const [submitting, setSubmitting] = useState<boolean>(false);
+  const [submitted, setSubmitted] = useState<boolean>(false);
 
-  // === ANIMATION STATE ===
-  const [islandFading, setIslandFading] = useState(false);
-  const [confirmed, setConfirmed] = useState(false);
+  // Falling leaves before submit
+  const leaves: FallingThing[] = useMemo(() => {
+    const arr: FallingThing[] = [];
+    for (let i = 0; i < 14; i += 1) {
+      arr.push({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        delay: `${(Math.random() * 6).toFixed(2)}s`,
+        duration: `${(8 + Math.random() * 4).toFixed(2)}s`,
+      });
+    }
+    return arr;
+  }, []);
 
-  // === LEAVES / COCONUTS ===
-  const generateItems = (type: "leaf" | "coconut") => {
-    return [...Array(12)].map((_, i) => ({
-      id: i,
-      left: `${Math.random() * 100}%`,
-      delay: `${(Math.random() * 4).toFixed(2)}s`,
-      duration: `${(8 + Math.random() * 5).toFixed(2)}s`,
-      type,
-    }));
+  // Falling coconuts after submit
+  const coconuts: FallingThing[] = useMemo(() => {
+    const arr: FallingThing[] = [];
+    for (let i = 0; i < 14; i += 1) {
+      arr.push({
+        id: i,
+        left: `${Math.random() * 100}%`,
+        delay: `${(Math.random() * 6).toFixed(2)}s`,
+        duration: `${(8 + Math.random() * 4).toFixed(2)}s`,
+      });
+    }
+    return arr;
+  }, []);
+
+  const handleChoice = (value: Choice) => {
+    setChoice(value);
+    setStep(1); // go to "how many bottles"
   };
 
-  const falling = confirmed ? generateItems("coconut") : generateItems("leaf");
+  const handleNextQuantity = () => {
+    if (!quantity) return;
+    setStep(2);
+  };
 
-  // === SEND TO GOOGLE SHEETS ===
-  const submitToSheets = async () => {
-    const formData = new FormData();
-    formData.append("choice", choice);
-    formData.append("quantity", quantity);
-    formData.append("name", name);
-    formData.append("phone", phone);
+  const handleNextPhone = () => {
+    if (!phone.trim()) return;
+    setStep(3);
+  };
 
+  const handleSubmit = async () => {
+    if (!choice || !quantity || !phone.trim() || !name.trim()) return;
+
+    setSubmitting(true);
     try {
+      const formData = new FormData();
+      formData.append("choice", choice);
+      formData.append("quantity", quantity);
+      formData.append("phone", phone.trim());
+      formData.append("name", name.trim());
+
+      // Fire-and-forget to Google Apps Script
       await fetch(SHEETS_ENDPOINT, {
         method: "POST",
         body: formData,
-        mode: "no-cors",
+        mode: "no-cors" as RequestMode,
       });
-    } catch (err) {
-      console.error("Sheets error (ignored):", err);
+
+      setSubmitted(true);
+      setStep(4);
+    } catch {
+      // we’re ignoring errors on the UI side, just like before
+    } finally {
+      setSubmitting(false);
     }
-  };
-
-  // === STEP ADVANCE HANDLING ===
-  const startQuestions = (val: "With Alcohol ($23)" | "No Alcohol ($15)") => {
-    setChoice(val);
-    setIslandFading(true);
-
-    setTimeout(() => {
-      setStep(1); // show first question
-    }, 900);
-  };
-
-  const finishOrder = async () => {
-    await submitToSheets();
-    setConfirmed(true);
-    setStep(4);
   };
 
   return (
     <div className="page-container">
+      {/* Glow border */}
       <div className="glow-border" />
 
-      {/* TOP BANNER */}
+      {/* Black top banner with Crackito logo */}
       <header className="banner">
         <img src="/CrackitoFALL.png" alt="Crackito Logo" className="logo" />
       </header>
 
-      {/* FALLING LEAVES / COCONUTS */}
+      {/* Falling leaves (before submit) / coconuts (after submit) */}
       <div className="leaves-container" aria-hidden="true">
-        {falling.map((item) => (
+        {(submitted ? coconuts : leaves).map((item: FallingThing) => (
           <div
             key={item.id}
-            className={confirmed ? "coconut" : "leaf"}
+            className={submitted ? "coconut" : "leaf"}
             style={{
               left: item.left,
               animationDelay: item.delay,
@@ -88,126 +117,135 @@ const App: React.FC = () => {
         ))}
       </div>
 
-      {/* MAIN CONTENT */}
       <main className="content">
-        {/* ORDER TITLE (visible only before confirmation) */}
-        {step === 0 && (
+        <h1 className="order-title">ORDER FORM</h1>
+
+        {/* BEFORE SUBMIT */}
+        {!submitted && (
           <>
-            <h1 className="order-title">ORDER FORM</h1>
+            {/* Step 0: island + two buttons + VERY LIMITED */}
+            {step === 0 && (
+              <>
+                <section className="island-container">
+                  <img
+                    src="/PR_Frame.png"
+                    alt="Puerto Rico Outline"
+                    className="island"
+                  />
+                  <div className="button-container">
+                    <button
+                      className="order-btn"
+                      onClick={() => handleChoice("With Alcohol ($23)")}
+                    >
+                      W/ ALCOHOL ($23)
+                    </button>
+                    <button
+                      className="order-btn"
+                      onClick={() => handleChoice("No Alcohol ($15)")}
+                    >
+                      NO ALCOHOL ($15)
+                    </button>
+                  </div>
+                </section>
+                <p className="limited-text">VERY LIMITED</p>
+              </>
+            )}
 
-            <section className="island-container">
-              <img
-                src="/PR_Frame.png"
-                alt="Puerto Rico Outline"
-                className="island"
-                style={{
-                  animation: islandFading ? "islandFadeOut 1s forwards" : undefined,
-                }}
-              />
-
-              <div className="button-container">
-                <button
-                  className="order-btn"
-                  onClick={() => startQuestions("With Alcohol ($23)")}
+            {/* Step 1: How many bottles? */}
+            {step === 1 && (
+              <div className="question-card fade-in">
+                <p className="question-text">How many bottles?</p>
+                <select
+                  className="dropdown"
+                  value={quantity}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                    setQuantity(e.target.value)
+                  }
                 >
-                  W/ ALCOHOL ($23)
-                </button>
-
-                <button
-                  className="order-btn"
-                  onClick={() => startQuestions("No Alcohol ($15)")}
-                >
-                  NO ALCOHOL ($15)
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+                <br />
+                <button className="next-btn" onClick={handleNextQuantity}>
+                  Next
                 </button>
               </div>
-            </section>
+            )}
 
-            <p
-              className="limited-text"
-              style={{
-                animation: islandFading ? "dissolve .9s forwards" : undefined,
-              }}
-            >
-              VERY LIMITED
-            </p>
+            {/* Step 2: Phone number */}
+            {step === 2 && (
+              <div className="question-card fade-in">
+                <p className="question-text">What&apos;s your phone number?</p>
+                <input
+                  className="text-input"
+                  type="tel"
+                  value={phone}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setPhone(e.target.value)
+                  }
+                  placeholder="(___) ___-____"
+                />
+                <br />
+                <button
+                  className="next-btn"
+                  onClick={handleNextPhone}
+                  disabled={!phone.trim()}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+
+            {/* Step 3: Name + Submit */}
+            {step === 3 && (
+              <div className="question-card fade-in">
+                <p className="question-text">What&apos;s your name?</p>
+                <input
+                  className="text-input"
+                  type="text"
+                  value={name}
+                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                    setName(e.target.value)
+                  }
+                  placeholder="Full name"
+                />
+                <br />
+                <button
+                  className="next-btn"
+                  onClick={handleSubmit}
+                  disabled={!name.trim() || submitting}
+                >
+                  {submitting ? "Saving..." : "Submit"}
+                </button>
+              </div>
+            )}
           </>
         )}
 
-        {/* ====== QUESTION 1 ====== */}
-        {step === 1 && (
-          <div className="question-card fade-in">
-            <p className="question-text">How many bottles would you like?</p>
-            <select
-              className="dropdown"
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-            >
-              <option value="1">1 Bottle</option>
-              <option value="2">2 Bottles</option>
-              <option value="3">3 Bottles</option>
-            </select>
-
-            <button className="next-btn" onClick={() => setStep(2)}>
-              Next
-            </button>
-          </div>
-        )}
-
-        {/* ====== QUESTION 2 ====== */}
-        {step === 2 && (
-          <div className="question-card fade-in">
-            <p className="question-text">Your name?</p>
-            <input
-              className="text-input"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="Enter full name"
-            />
-            <button className="next-btn" onClick={() => setStep(3)}>
-              Next
-            </button>
-          </div>
-        )}
-
-        {/* ====== QUESTION 3 ====== */}
-        {step === 3 && (
-          <div className="question-card fade-in">
-            <p className="question-text">Phone number?</p>
-            <input
-              className="text-input"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="(xxx) xxx-xxxx"
-            />
-            <button className="next-btn" onClick={finishOrder}>
-              Submit
-            </button>
-          </div>
-        )}
-
-        {/* ====== CONFIRMATION ====== */}
-        {step === 4 && (
+        {/* AFTER SUBMIT */}
+        {submitted && (
           <div className="confirmation-screen fade-in-slow">
             <img
               src="/PR_Frame.png"
               alt="Puerto Rico Outline"
               className="confirm-island"
             />
-
-            <p className="confirm-msg" style={{ marginTop: "14px" }}>
-              <strong>Order Confirmed!</strong> I will reach out regarding delivery
-              date and address. Thank you for supporting Crackito for the 6th year.
-              ¡Feliz Día de Acción de Gracias!
+            <p className="confirm-msg">
+              Order Confirmed! I will reach out regarding delivery date and
+              address. Thank you for supporting Crackito for the 6th year. ¡Feliz
+              Día de Acción de Gracias!
             </p>
           </div>
         )}
       </main>
 
-      {/* FOOTER */}
+      {/* Footer stays stuck to bottom */}
       <footer className="footer">
         <p>ORDERS TO BE DELIVERED 21st–26TH</p>
         <p className="extra-love">
-          If 15+ minutes away, please consider giving a little extra love. Thank you!
+          If 15+ minutes away, please consider giving a little extra love. Thank
+          you!
         </p>
       </footer>
     </div>
