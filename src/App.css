@@ -1,6 +1,6 @@
 @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat+Alternates:wght@400;500;700&display=swap");
 
-/* Base */
+/* Base layout */
 html,
 body,
 #root {
@@ -11,17 +11,15 @@ body,
   background: linear-gradient(180deg, #e2b365 0%, #4a2e16 100%);
 }
 
-/* Root layout */
 .page-container {
   position: relative;
   min-height: 100%;
   color: #fff7eb;
   overflow: hidden;
-  font-family: "Montserrat Alternates", system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Montserrat Alternates", system-ui, sans-serif;
 }
 
-/* Outer glow around the whole viewport */
+/* GLOW BORDER AROUND ENTIRE PAGE */
 .glow-border {
   position: fixed;
   inset: 0;
@@ -47,45 +45,47 @@ body,
   }
 }
 
-/* Banner + logo */
-:root {
-  --banner-h: 170px;
-}
-
+/* ===========================
+   TOP BANNER + LOGO
+=========================== */
 .banner {
-  position: relative;
-  z-index: 3;
   width: 100%;
-  height: var(--banner-h);
-  background: #000000;
+  height: 140px;
+  background: #000000 !important;
   display: flex;
-  align-items: center;
   justify-content: center;
+  align-items: center;
+  z-index: 50;
+  box-shadow: 0 0 22px rgba(0, 0, 0, 0.8);
+  position: relative;
 }
 
 .logo {
-  height: calc(var(--banner-h) - 18px);
+  height: 100%;
+  width: auto;
   object-fit: contain;
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.6));
 }
 
-/* Leaves (start just under banner) */
+/* ===========================
+   FALLING LEAVES (BEFORE CONFIRMATION)
+=========================== */
 .leaves-container {
   position: absolute;
-  top: var(--banner-h);
+  top: 140px; /* directly under banner */
   left: 0;
   width: 100%;
-  height: calc(100% - var(--banner-h));
+  height: calc(100% - 140px);
   overflow: hidden;
   pointer-events: none;
   z-index: 1;
 }
 
-.leaf {
+.leaf,
+.coconut {
   position: absolute;
   top: -40px;
-  width: 26px;
-  height: 26px;
+  width: 32px;
+  height: 32px;
   opacity: 0.9;
   background-size: contain;
   background-repeat: no-repeat;
@@ -96,41 +96,46 @@ body,
 
 @keyframes fall {
   0% {
-    transform: translateY(-10px) rotate(0deg);
+    transform: translateY(-10px);
     opacity: 1;
   }
   100% {
-    transform: translateY(110vh) rotate(360deg);
+    transform: translateY(110vh);
     opacity: 0.85;
   }
 }
 
 @keyframes sway {
   0% {
-    transform: translateX(0) rotate(0deg);
+    transform: translateX(0px) rotate(0deg);
   }
   50% {
-    transform: translateX(20px) rotate(10deg);
+    transform: translateX(25px) rotate(8deg);
   }
   100% {
-    transform: translateX(-5px) rotate(0deg);
+    transform: translateX(-10px) rotate(0deg);
   }
 }
 
-/* Vector leaf icons inline */
-.leaf--red {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 64 64'><path fill='%23d43c1e' d='M46 6c-6 1-10 4-14 8c-4 4-7 8-9 13l-7 3l4 3l-7 6l4 2l-4 8l8-4l2 4l6-7l3 4l3-7c5-2 9-5 13-9c4-4 7-9 8-15c1-5-2-10-10-9z'/></svg>");
+/* VEGAN FALL LEAF SVGs */
+.leaf {
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 64 64'><path fill='%23ffb84d' d='M48 8c-6 1-10 4-14 8s-7 8-9 13l-7 3l4 3l-7 6l4 2l-3 7l7-3l2 4l6-7l3 3l3-7c5-2 9-5 13-9s7-9 8-15c1-6-3-10-10-8z'/></svg>");
 }
 
-.leaf--orange {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 64 64'><path fill='%23ff7f24' d='M50 10c-5 0-10 2-14 6s-7 8-9 13l-8 2l5 3l-7 6l5 2l-3 7l7-3l2 5l6-7l3 3l3-7c4-2 8-5 12-9s6-9 6-14c0-5-3-10-10-10z'/></svg>");
+/* ===========================
+   COCONUTS FOR CONFIRMATION
+=========================== */
+.coconut {
+  background-image: url("data:image/svg+xml;utf8,\
+<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 64 64'><circle cx='32' cy='32' r='28' fill='%236b3e16'/><circle cx='22' cy='26' r='6' fill='%23fff'/><circle cx='41' cy='29' r='6' fill='%23fff'/></svg>");
+  opacity: 0.95;
 }
 
-.leaf--yellow {
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='26' height='26' viewBox='0 0 64 64'><path fill='%23ffb84d' d='M48 8c-6 1-10 4-14 8s-7 8-9 13l-7 3l4 3l-7 6l4 2l-3 7l7-3l2 4l6-7l3 3l3-7c5-2 9-5 13-9s7-9 8-15c1-6-3-10-10-8z'/></svg>");
-}
+/* ===========================
+   MAIN CONTENT
+=========================== */
 
-/* Main content */
 .content {
   position: relative;
   z-index: 2;
@@ -139,17 +144,19 @@ body,
 }
 
 .order-title {
-  font-family: "Montserrat Alternates", system-ui, -apple-system,
-    BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Montserrat Alternates", sans-serif;
   font-weight: 700;
   font-size: 44px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  color: #ffb84d;
+  color: #ffffff;
   margin: 22px 0 26px;
 }
 
-/* Island frame + glow */
+/* ===========================
+   ISLAND + GLOW
+=========================== */
+
 .island-container {
   position: relative;
   display: inline-block;
@@ -161,6 +168,14 @@ body,
   opacity: 0.98;
   filter: drop-shadow(0 0 12px rgba(255, 140, 0, 0.8));
   animation: islandGlow 8s infinite alternate ease-in-out;
+}
+
+.confirm-island {
+  width: 90%;
+  max-width: 720px;
+  opacity: 0.98;
+  margin-top: 20px;
+  animation: islandFadeIn 1.8s ease forwards;
 }
 
 @keyframes islandGlow {
@@ -175,7 +190,27 @@ body,
   }
 }
 
-/* Buttons inside island */
+@keyframes islandFadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes islandFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ===========================
+   BUTTONS INSIDE ISLAND
+=========================== */
 .button-container {
   position: absolute;
   top: 42%;
@@ -206,7 +241,90 @@ body,
   box-shadow: 0 0 14px #ffb84d;
 }
 
-/* VERY LIMITED + confirmation */
+/* ===========================
+   QUESTION CARDS (STEPS 1–3)
+=========================== */
+.question-card {
+  background: rgba(0, 0, 0, 0.35);
+  padding: 28px;
+  width: 82%;
+  max-width: 520px;
+  margin: 0 auto;
+  border-radius: 12px;
+  backdrop-filter: blur(6px);
+  animation: fadeIn 0.8s ease forwards;
+}
+
+.question-text {
+  color: #ffe7c3;
+  font-size: 22px;
+  margin-bottom: 16px;
+  letter-spacing: 1px;
+}
+
+.dropdown {
+  width: 80%;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 18px;
+}
+
+.text-input {
+  width: 80%;
+  padding: 12px;
+  font-size: 18px;
+  border-radius: 10px;
+  border: none;
+  margin-bottom: 18px;
+}
+
+.next-btn {
+  background: #ffb84d;
+  border: none;
+  padding: 12px 34px;
+  border-radius: 8px;
+  color: #4a2e16;
+  font-size: 20px;
+  font-family: "Bebas Neue", sans-serif;
+  cursor: pointer;
+}
+
+.next-btn:hover {
+  background: #ffd48c;
+}
+
+/* Fade animations */
+.fade-in {
+  animation: fadeIn 0.9s ease forwards;
+}
+
+.fade-in-slow {
+  animation: fadeIn 1.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes dissolve {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* VERY LIMITED */
 .limited-text {
   margin-top: 30px;
   font-size: 26px;
@@ -214,17 +332,21 @@ body,
   color: #ffb84d;
 }
 
-.confirmation {
-  margin-top: 10px;
-  font-size: 14px;
-  color: #ffe7c3;
+/* CONFIRMATION SCREEN */
+.confirmation-screen {
+  margin-top: -10px; /* moved upward */
+  padding-bottom: 60px;
 }
 
-.confirmation span {
-  font-weight: 700;
+.confirm-msg {
+  font-size: 18px;
+  color: #fff7eb;
+  margin-top: 6px; /* moved upward */
+  line-height: 1.6;
+  padding: 0 22px;
 }
 
-/* Footer */
+/* FOOTER */
 .footer {
   position: fixed;
   bottom: 0;
@@ -246,69 +368,13 @@ body,
   opacity: 0.9;
 }
 
-/* Responsive */
+/* RESPONSIVE */
 @media (max-width: 768px) {
-  :root {
-    --banner-h: 150px;
-  }
-
   .order-title {
     font-size: 34px;
-    letter-spacing: 0.16em;
   }
-
-  .button-container {
-    gap: 16px;
-    width: 86%;
-    top: 44%;
-  }
-
   .order-btn {
     font-size: 18px;
     padding: 10px 22px;
   }
-
-  .leaf {
-    width: 22px;
-    height: 22px;
-  }
-}
-/* FORCE THE TOP BANNER TO EXIST */
-.banner {
-  width: 100%;
-  height: 140px; /* can adjust to your liking */
-  background: #000000 !important; /* solid black */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-  z-index: 50; /* stays ABOVE everything */
-  box-shadow: 0 0 22px rgba(0, 0, 0, 0.8);
-}
-
-/* LOGO INSIDE THE BANNER */
-.banner img {
-  height: 100%; /* fills banner height */
-  width: auto; /* keep proportions */
-  object-fit: contain;
-  margin: 0;
-  padding: 0;
-}
-body,
-html {
-  height: 100%;
-}
-
-#root {
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.content {
-  flex: 1; /* pushes footer down */
-}
-.footer-banner {
-  position: relative; /* or static */
-  margin-top: 40px;
 }
