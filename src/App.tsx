@@ -3,7 +3,7 @@ import "./App.css";
 
 // Google Sheets endpoint
 const SHEETS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbyB548qtWGscUlP-mS3OQSC1ZS3jtteLTUEK4HBAK7oBgQ3Mnli76Yb_T0LuOpgmFZ4/exec";
+https://script.google.com/macros/s/AKfycbxFUg0-Ck7_M4HIMAT5d7tyXpA4qoBMDM_6ouSeA6hloPZp4fJlXay-LSRSmjmO4coH/exec
 
 type Step = 0 | 1 | 2 | 3 | 4;
 // 0 = choose alcohol
