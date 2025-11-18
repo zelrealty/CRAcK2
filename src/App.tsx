@@ -1,41 +1,39 @@
 import React, { useState } from "react";
 import "./App.css";
 
-// Google Sheets endpoint
 const SHEETS_ENDPOINT =
-https://script.google.com/macros/s/AKfycbxFUg0-Ck7_M4HIMAT5d7tyXpA4qoBMDM_6ouSeA6hloPZp4fJlXay-LSRSmjmO4coH/exec
-
-type Step = 0 | 1 | 2 | 3 | 4;
-// 0 = choose alcohol
-// 1 = choose qty
-// 2 = enter name
-// 3 = enter phone
-// 4 = confirmation
-
-type Choice = "With Alcohol ($23)" | "No Alcohol ($15)";
+  "https://script.google.com/macros/s/AKfycbxFUg0-Ck7_M4HIMAT5d7tyXpA4qoBMDM_6ouSeA6hloPZp4fJlXay-LSRSmjmO4coH/exec";
 
 const App: React.FC = () => {
-  const [step, setStep] = useState<Step>(0);
-  const [choice, setChoice] = useState<Choice | "">("");
-  const [qty, setQty] = useState<string>("1");
+  // === ORDER STATE MACHINE ===
+  const [step, setStep] = useState<0 | 1 | 2 | 3 | 4>(0);
+  const [choice, setChoice] = useState<"" | "With Alcohol ($23)" | "No Alcohol ($15)">("");
+  const [quantity, setQuantity] = useState<string>("1");
   const [name, setName] = useState<string>("");
   const [phone, setPhone] = useState<string>("");
-  const [saving, setSaving] = useState<boolean>(false);
 
-  // Generate falling leaves (will switch to coconuts later)
-  const leaves = Array.from({ length: 14 }, (_, i) => ({
-    id: i,
-    left: `${Math.random() * 100}%`,
-    delay: `${(Math.random() * 6).toFixed(2)}s`,
-    duration: `${(8 + Math.random() * 4).toFixed(2)}s`,
-  }));
+  // === ANIMATION STATE ===
+  const [islandFading, setIslandFading] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
 
-  // Submit final order → Google Sheets
-  const submitFinal = async () => {
-    setSaving(true);
+  // === LEAVES / COCONUTS ===
+  const generateItems = (type: "leaf" | "coconut") => {
+    return [...Array(12)].map((_, i) => ({
+      id: i,
+      left: `${Math.random() * 100}%`,
+      delay: `${(Math.random() * 4).toFixed(2)}s`,
+      duration: `${(8 + Math.random() * 5).toFixed(2)}s`,
+      type,
+    }));
+  };
+
+  const falling = confirmed ? generateItems("coconut") : generateItems("leaf");
+
+  // === SEND TO GOOGLE SHEETS ===
+  const submitToSheets = async () => {
     const formData = new FormData();
     formData.append("choice", choice);
-    formData.append("qty", qty);
+    formData.append("quantity", quantity);
     formData.append("name", name);
     formData.append("phone", phone);
 
@@ -43,94 +41,106 @@ const App: React.FC = () => {
       await fetch(SHEETS_ENDPOINT, {
         method: "POST",
         body: formData,
+        mode: "no-cors",
       });
-    } catch (e) {
-      console.log("Sheets error ignored:", e);
+    } catch (err) {
+      console.error("Sheets error (ignored):", err);
     }
+  };
 
-    setSaving(false);
-    setStep(4); // confirmation screen
+  // === STEP ADVANCE HANDLING ===
+  const startQuestions = (val: "With Alcohol ($23)" | "No Alcohol ($15)") => {
+    setChoice(val);
+    setIslandFading(true);
+
+    setTimeout(() => {
+      setStep(1); // show first question
+    }, 900);
+  };
+
+  const finishOrder = async () => {
+    await submitToSheets();
+    setConfirmed(true);
+    setStep(4);
   };
 
   return (
     <div className="page-container">
       <div className="glow-border" />
 
-      {/* TOP BANNER — DO NOT CHANGE */}
+      {/* TOP BANNER */}
       <header className="banner">
         <img src="/CrackitoFALL.png" alt="Crackito Logo" className="logo" />
       </header>
 
-      {/* FALLING ICONS (leaves first, coconuts on confirmation screen) */}
+      {/* FALLING LEAVES / COCONUTS */}
       <div className="leaves-container" aria-hidden="true">
-        {step < 4
-          ? leaves.map((leaf) => (
-              <div
-                key={leaf.id}
-                className="leaf"
-                style={{
-                  left: leaf.left,
-                  animationDelay: leaf.delay,
-                  animationDuration: leaf.duration,
-                }}
-              />
-            ))
-          : leaves.map((leaf) => (
-              <div
-                key={leaf.id}
-                className="coconut"
-                style={{
-                  left: leaf.left,
-                  animationDelay: leaf.delay,
-                  animationDuration: leaf.duration,
-                }}
-              />
-            ))}
+        {falling.map((item) => (
+          <div
+            key={item.id}
+            className={confirmed ? "coconut" : "leaf"}
+            style={{
+              left: item.left,
+              animationDelay: item.delay,
+              animationDuration: item.duration,
+            }}
+          />
+        ))}
       </div>
 
       {/* MAIN CONTENT */}
       <main className="content">
-        {/* ORDER FORM TITLE */}
-        {step < 4 && <h1 className="order-title">ORDER FORM</h1>}
-
-        {/* ISLAND + BUTTONS STEP 0 */}
+        {/* ORDER TITLE (visible only before confirmation) */}
         {step === 0 && (
           <>
-            <section className="island-container fade-in">
-              <img src="/PR_Frame.png" alt="Island" className="island" />
+            <h1 className="order-title">ORDER FORM</h1>
+
+            <section className="island-container">
+              <img
+                src="/PR_Frame.png"
+                alt="Puerto Rico Outline"
+                className="island"
+                style={{
+                  animation: islandFading ? "islandFadeOut 1s forwards" : undefined,
+                }}
+              />
+
               <div className="button-container">
                 <button
                   className="order-btn"
-                  onClick={() => {
-                    setChoice("With Alcohol ($23)");
-                    setStep(1);
-                  }}
+                  onClick={() => startQuestions("With Alcohol ($23)")}
                 >
                   W/ ALCOHOL ($23)
                 </button>
+
                 <button
                   className="order-btn"
-                  onClick={() => {
-                    setChoice("No Alcohol ($15)");
-                    setStep(1);
-                  }}
+                  onClick={() => startQuestions("No Alcohol ($15)")}
                 >
                   NO ALCOHOL ($15)
                 </button>
               </div>
             </section>
-            <p className="limited-text fade-in-slow">VERY LIMITED</p>
+
+            <p
+              className="limited-text"
+              style={{
+                animation: islandFading ? "dissolve .9s forwards" : undefined,
+              }}
+            >
+              VERY LIMITED
+            </p>
           </>
         )}
 
-        {/* STEP 1 — HOW MANY */}
+        {/* ====== QUESTION 1 ====== */}
         {step === 1 && (
           <div className="question-card fade-in">
-            <p className="question-text">How many bottles?</p>
+            <p className="question-text">How many bottles would you like?</p>
             <select
               className="dropdown"
-              value={qty}
-              onChange={(e) => setQty(e.target.value)}
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
             >
               <option value="1">1 Bottle</option>
               <option value="2">2 Bottles</option>
@@ -143,26 +153,23 @@ const App: React.FC = () => {
           </div>
         )}
 
-        {/* STEP 2 — NAME */}
+        {/* ====== QUESTION 2 ====== */}
         {step === 2 && (
           <div className="question-card fade-in">
-            <p className="question-text">What is your name?</p>
+            <p className="question-text">Your name?</p>
             <input
               className="text-input"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Your full name"
+              placeholder="Enter full name"
             />
-            <button
-              className="next-btn"
-              onClick={() => name.trim() !== "" && setStep(3)}
-            >
+            <button className="next-btn" onClick={() => setStep(3)}>
               Next
             </button>
           </div>
         )}
 
-        {/* STEP 3 — PHONE */}
+        {/* ====== QUESTION 3 ====== */}
         {step === 3 && (
           <div className="question-card fade-in">
             <p className="question-text">Phone number?</p>
@@ -170,39 +177,37 @@ const App: React.FC = () => {
               className="text-input"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              placeholder="555-555-5555"
+              placeholder="(xxx) xxx-xxxx"
             />
-
-            <button
-              className="next-btn"
-              onClick={() => phone.trim() !== "" && submitFinal()}
-              disabled={saving}
-            >
-              {saving ? "Saving..." : "Submit Order"}
+            <button className="next-btn" onClick={finishOrder}>
+              Submit
             </button>
           </div>
         )}
 
-        {/* STEP 4 — CONFIRMATION + ISLAND RETURNS + COCONUTS FALL */}
+        {/* ====== CONFIRMATION ====== */}
         {step === 4 && (
-          <div className="confirmation-screen fade-in">
-            <img src="/PR_Frame.png" className="island confirm-island" />
+          <div className="confirmation-screen fade-in-slow">
+            <img
+              src="/PR_Frame.png"
+              alt="Puerto Rico Outline"
+              className="confirm-island"
+            />
 
-            <p className="confirm-msg">
-              Order Confirmed! I will reach out regarding delivery date and
-              address. Thank you for supporting Crackito for the 6th year.
+            <p className="confirm-msg" style={{ marginTop: "14px" }}>
+              <strong>Order Confirmed!</strong> I will reach out regarding delivery
+              date and address. Thank you for supporting Crackito for the 6th year.
               ¡Feliz Día de Acción de Gracias!
             </p>
           </div>
         )}
       </main>
 
-      {/* FOOTER — NEVER CHANGES */}
+      {/* FOOTER */}
       <footer className="footer">
         <p>ORDERS TO BE DELIVERED 21st–26TH</p>
         <p className="extra-love">
-          If 15+ minutes away, please consider giving a little extra love. Thank
-          you!
+          If 15+ minutes away, please consider giving a little extra love. Thank you!
         </p>
       </footer>
     </div>
